@@ -32,7 +32,7 @@ class Medoo
 
 	protected $dsn;
 
-	protected $logs = [];
+	protected $logs = array();
 
 	protected $logging = false;
 
@@ -64,8 +64,8 @@ class Medoo
 			$this->logging = $options[ 'logging' ];
 		}
 
-		$option = isset($options[ 'option' ]) ? $options[ 'option' ] : [];
-		$commands = (isset($options[ 'command' ]) && is_array($options[ 'command' ])) ? $options[ 'command' ] : [];
+		$option = isset($options[ 'option' ]) ? $options[ 'option' ] : array();
+		$commands = (isset($options[ 'command' ]) && is_array($options[ 'command' ])) ? $options[ 'command' ] : array();
 
 		switch ($this->type)
 		{
@@ -128,10 +128,10 @@ class Medoo
 			switch ($this->type)
 			{
 				case 'mysql':
-					$attr = [
+					$attr = array(
 						'driver' => 'mysql',
 						'dbname' => $options[ 'database_name' ]
-					];
+					);
 
 					if (isset($options[ 'socket' ]))
 					{
@@ -150,11 +150,11 @@ class Medoo
 					break;
 
 				case 'pgsql':
-					$attr = [
+					$attr = array(
 						'driver' => 'pgsql',
 						'host' => $options[ 'server' ],
 						'dbname' => $options[ 'database_name' ]
-					];
+					);
 
 					if ($is_port)
 					{
@@ -164,11 +164,11 @@ class Medoo
 					break;
 
 				case 'sybase':
-					$attr = [
+					$attr = array(
 						'driver' => 'dblib',
 						'host' => $options[ 'server' ],
 						'dbname' => $options[ 'database_name' ]
-					];
+					);
 
 					if ($is_port)
 					{
@@ -178,12 +178,12 @@ class Medoo
 					break;
 
 				case 'oracle':
-					$attr = [
+					$attr = array(
 						'driver' => 'oci',
 						'dbname' => $options[ 'server' ] ?
 							'//' . $options[ 'server' ] . ($is_port ? ':' . $port : ':1521') . '/' . $options[ 'database_name' ] :
 							$options[ 'database_name' ]
-					];
+					);
 
 					if (isset($options[ 'charset' ]))
 					{
@@ -195,11 +195,11 @@ class Medoo
 				case 'mssql':
 					if (isset($options[ 'driver' ]) && $options[ 'driver' ] === 'dblib')
 					{
-						$attr = [
+						$attr = array(
 							'driver' => 'dblib',
 							'host' => $options[ 'server' ] . ($is_port ? ':' . $port : ''),
 							'dbname' => $options[ 'database_name' ]
-						];
+						);
 
 						if (isset($options[ 'appname' ]))
 						{
@@ -213,18 +213,18 @@ class Medoo
 					}
 					else
 					{
-						$attr = [
+						$attr = array(
 							'driver' => 'sqlsrv',
 							'Server' => $options[ 'server' ] . ($is_port ? ',' . $port : ''),
 							'Database' => $options[ 'database_name' ]
-						];
+						);
 
 						if (isset($options[ 'appname' ]))
 						{
 							$attr[ 'APP' ] = $options[ 'appname' ];
 						}
 
-						$config = [
+						$config = array(
 							'ApplicationIntent',
 							'AttachDBFileName',
 							'Authentication',
@@ -245,11 +245,11 @@ class Medoo
 							'TransparentNetworkIPResolution',
 							'TrustServerCertificate',
 							'WSID',
-						];
+						);
 
 						foreach ($config as $value)
 						{
-							$keyname = strtolower(preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $value));
+							$keyname = strtolower(preg_replace(array('/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'), '$1_$2', $value));
 
 							if (isset($options[ $keyname ]))
 							{
@@ -261,10 +261,10 @@ class Medoo
 					break;
 
 				case 'sqlite':
-					$attr = [
+					$attr = array(
 						'driver' => 'sqlite',
 						$options[ 'database_file' ]
-					];
+					);
 
 					break;
 			}
@@ -284,7 +284,7 @@ class Medoo
 
 		unset($attr[ 'driver' ]);
 
-		$stack = [];
+		$stack = array();
 
 		foreach ($attr as $key => $value)
 		{
@@ -294,7 +294,7 @@ class Medoo
 		$dsn = $driver . ':' . implode(';', $stack);
 
 		if (
-			in_array($this->type, ['mysql', 'pgsql', 'sybase', 'mssql']) &&
+			in_array($this->type, array('mysql', 'pgsql', 'sybase', 'mssql')) &&
 			isset($options[ 'charset' ])
 		)
 		{
@@ -324,7 +324,7 @@ class Medoo
 		}
 	}
 
-	public function query($query, $map = [])
+	public function query($query, $map = array())
 	{
 		$raw = $this->raw($query, $map);
 
@@ -333,7 +333,7 @@ class Medoo
 		return $this->exec($query, $map);
 	}
 
-	public function exec($query, $map = [])
+	public function exec($query, $map = array())
 	{
 		$this->statement = null;
 
@@ -348,11 +348,11 @@ class Medoo
 
 		if ($this->logging)
 		{
-			$this->logs[] = [$query, $map];
+			$this->logs[] = array($query, $map);
 		}
 		else
 		{
-			$this->logs = [[$query, $map]];
+			$this->logs = array(array($query, $map));
 		}
 
 		$statement = $this->pdo->prepare($query);
@@ -386,10 +386,10 @@ class Medoo
 
 	protected function generate($query, $map)
 	{
-		$identifier = [
+		$identifier = array(
 			'mysql' => '`$1`',
 			'mssql' => '[$1]'
-		];
+		);
 
 		$query = preg_replace(
 			'/"([a-zA-Z0-9_]+)"/i',
@@ -422,7 +422,7 @@ class Medoo
 		return $query;
 	}
 
-	public static function raw($string, $map = [])
+	public static function raw($string, $map = array())
 	{
 		$raw = new Raw();
 
@@ -497,7 +497,7 @@ class Medoo
 
 	protected function typeMap($value, $type)
 	{
-		$map = [
+		$map = array(
 			'NULL' => PDO::PARAM_NULL,
 			'integer' => PDO::PARAM_INT,
 			'double' => PDO::PARAM_STR,
@@ -505,7 +505,7 @@ class Medoo
 			'string' => PDO::PARAM_STR,
 			'object' => PDO::PARAM_STR,
 			'resource' => PDO::PARAM_LOB
-		];
+		);
 
 		if ($type === 'boolean')
 		{
@@ -516,7 +516,7 @@ class Medoo
 			$value = null;
 		}
 
-		return [$value, $map[ $type ]];
+		return array($value, $map[ $type ]);
 	}
 
 	protected function columnQuote($string)
@@ -541,11 +541,11 @@ class Medoo
 			return $columns;
 		}
 
-		$stack = [];
+		$stack = array();
 
 		if (is_string($columns))
 		{
-			$columns = [$columns];
+			$columns = array($columns);
 		}
 
 		foreach ($columns as $key => $value)
@@ -598,7 +598,7 @@ class Medoo
 
 	protected function arrayQuote($array)
 	{
-		$stack = [];
+		$stack = array();
 
 		foreach ($array as $value)
 		{
@@ -610,7 +610,7 @@ class Medoo
 
 	protected function innerConjunct($data, $map, $conjunctor, $outer_conjunctor)
 	{
-		$stack = [];
+		$stack = array();
 
 		foreach ($data as $value)
 		{
@@ -622,7 +622,7 @@ class Medoo
 
 	protected function dataImplode($data, &$map, $conjunctor)
 	{
-		$stack = [];
+		$stack = array();
 
 		foreach ($data as $key => $value)
 		{
@@ -660,14 +660,14 @@ class Medoo
 				{
 					$operator = $match[ 'operator' ];
 
-					if (in_array($operator, ['>', '>=', '<', '<=']))
+					if (in_array($operator, array('>', '>=', '<', '<=')))
 					{
 						$condition = $column . ' ' . $operator . ' ';
 
 						if (is_numeric($value))
 						{
 							$condition .= $map_key;
-							$map[ $map_key ] = [$value, is_float($value) ? PDO::PARAM_STR : PDO::PARAM_INT];
+							$map[ $map_key ] = array($value, is_float($value) ? PDO::PARAM_STR : PDO::PARAM_INT);
 						}
 						elseif ($raw = $this->buildRaw($value, $map))
 						{
@@ -676,7 +676,7 @@ class Medoo
 						else
 						{
 							$condition .= $map_key;
-							$map[ $map_key ] = [$value, PDO::PARAM_STR];
+							$map[ $map_key ] = array($value, PDO::PARAM_STR);
 						}
 
 						$stack[] = $condition;
@@ -690,7 +690,7 @@ class Medoo
 								break;
 
 							case 'array':
-								$placeholders = [];
+								$placeholders = array();
 
 								foreach ($value as $index => $item)
 								{
@@ -723,7 +723,7 @@ class Medoo
 					{
 						if ($type !== 'array')
 						{
-							$value = [ $value ];
+							$value = array( $value );
 						}
 
 						$connector = ' OR ';
@@ -738,7 +738,7 @@ class Medoo
 							}
 						}
 
-						$like_clauses = [];
+						$like_clauses = array();
 
 						foreach ($value as $index => $item)
 						{
@@ -750,7 +750,7 @@ class Medoo
 							}
 
 							$like_clauses[] = $column . ($operator === '!~' ? ' NOT' : '') . ' LIKE ' . $map_key . 'L' . $index;
-							$map[ $map_key . 'L' . $index ] = [$item, PDO::PARAM_STR];
+							$map[ $map_key . 'L' . $index ] = array($item, PDO::PARAM_STR);
 						}
 
 						$stack[] = '(' . implode($connector, $like_clauses) . ')';
@@ -768,14 +768,14 @@ class Medoo
 
 							$data_type = (is_numeric($value[ 0 ]) && is_numeric($value[ 1 ])) ? PDO::PARAM_INT : PDO::PARAM_STR;
 
-							$map[ $map_key . 'a' ] = [$value[ 0 ], $data_type];
-							$map[ $map_key . 'b' ] = [$value[ 1 ], $data_type];
+							$map[ $map_key . 'a' ] = array($value[ 0 ], $data_type);
+							$map[ $map_key . 'b' ] = array($value[ 1 ], $data_type);
 						}
 					}
 					elseif ($operator === 'REGEXP')
 					{
 						$stack[] = $column . ' REGEXP ' . $map_key;
-						$map[ $map_key ] = [$value, PDO::PARAM_STR];
+						$map[ $map_key ] = array($value, PDO::PARAM_STR);
 					}
 				}
 				else
@@ -787,7 +787,7 @@ class Medoo
 							break;
 
 						case 'array':
-							$placeholders = [];
+							$placeholders = array();
 
 							foreach ($value as $index => $item)
 							{
@@ -831,7 +831,7 @@ class Medoo
 			$where_keys = array_keys($where);
 
 			$conditions = array_diff_key($where, array_flip(
-				['GROUP', 'ORDER', 'HAVING', 'LIMIT', 'LIKE', 'MATCH']
+				array('GROUP', 'ORDER', 'HAVING', 'LIMIT', 'LIKE', 'MATCH')
 			));
 
 			if (!empty($conditions))
@@ -847,21 +847,21 @@ class Medoo
 				{
 					$mode = '';
 
-					$mode_array = [
+					$mode_array = array(
 						'natural' => 'IN NATURAL LANGUAGE MODE',
 						'natural+query' => 'IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION',
 						'boolean' => 'IN BOOLEAN MODE',
 						'query' => 'WITH QUERY EXPANSION'
-					];
+					);
 
 					if (isset($MATCH[ 'mode' ], $mode_array[ $MATCH[ 'mode' ] ]))
 					{
 						$mode = ' ' . $mode_array[ $MATCH[ 'mode' ] ];
 					}
 
-					$columns = implode(', ', array_map([$this, 'columnQuote'], $MATCH[ 'columns' ]));
+					$columns = implode(', ', array_map(array($this, 'columnQuote'), $MATCH[ 'columns' ]));
 					$map_key = $this->mapKey();
-					$map[ $map_key ] = [$MATCH[ 'keyword' ], PDO::PARAM_STR];
+					$map[ $map_key ] = array($MATCH[ 'keyword' ], PDO::PARAM_STR);
 
 					$where_clause .= ($where_clause !== '' ? ' AND ' : ' WHERE') . ' MATCH (' . $columns . ') AGAINST (' . $map_key . $mode . ')';
 				}
@@ -873,7 +873,7 @@ class Medoo
 
 				if (is_array($GROUP))
 				{
-					$stack = [];
+					$stack = array();
 
 					foreach ($GROUP as $column => $value)
 					{
@@ -910,7 +910,7 @@ class Medoo
 
 				if (is_array($ORDER))
 				{
-					$stack = [];
+					$stack = array();
 
 					foreach ($ORDER as $column => $value)
 					{
@@ -941,14 +941,14 @@ class Medoo
 
 				if (
 					isset($where[ 'LIMIT' ]) &&
-					in_array($this->type, ['oracle', 'mssql'])
+					in_array($this->type, array('oracle', 'mssql'))
 				)
 				{
 					$LIMIT = $where[ 'LIMIT' ];
 
 					if (is_numeric($LIMIT))
 					{
-						$LIMIT = [0, $LIMIT];
+						$LIMIT = array(0, $LIMIT);
 					}
 					
 					if (
@@ -962,7 +962,7 @@ class Medoo
 				}
 			}
 
-			if (isset($where[ 'LIMIT' ]) && !in_array($this->type, ['oracle', 'mssql']))
+			if (isset($where[ 'LIMIT' ]) && !in_array($this->type, array('oracle', 'mssql')))
 			{
 				$LIMIT = $where[ 'LIMIT' ];
 
@@ -1077,14 +1077,14 @@ class Medoo
 
 	protected function buildJoin($table, $join)
 	{
-		$table_join = [];
+		$table_join = array();
 
-		$join_array = [
+		$join_array = array(
 			'>' => 'LEFT',
 			'<' => 'RIGHT',
 			'<>' => 'FULL',
 			'><' => 'INNER'
-		];
+		);
 
 		foreach($join as $sub_table => $relation)
 		{
@@ -1106,7 +1106,7 @@ class Medoo
 					}
 					else
 					{
-						$joins = [];
+						$joins = array();
 
 						foreach ($relation as $key => $value)
 						{
@@ -1159,11 +1159,11 @@ class Medoo
 
 				if (isset($key_match[ 'type' ]))
 				{
-					$stack[ $value ] = [$column_key, $key_match[ 'type' ]];
+					$stack[ $value ] = array($column_key, $key_match[ 'type' ]);
 				}
 				else
 				{
-					$stack[ $value ] = [$column_key, 'String'];
+					$stack[ $value ] = array($column_key, 'String');
 				}
 			}
 			elseif ($this->isRaw($value))
@@ -1174,18 +1174,18 @@ class Medoo
 
 				if (isset($key_match[ 'type' ]))
 				{
-					$stack[ $key ] = [$column_key, $key_match[ 'type' ]];
+					$stack[ $key ] = array($column_key, $key_match[ 'type' ]);
 				}
 				else
 				{
-					$stack[ $key ] = [$column_key, 'String'];
+					$stack[ $key ] = array($column_key, 'String');
 				}
 			}
 			elseif (!is_int($key) && is_array($value))
 			{
 				if ($root && count(array_keys($columns)) === 1)
 				{
-					$stack[ $key ] = [$key, 'String'];
+					$stack[ $key ] = array($key, 'String');
 				}
 
 				$this->columnMap($value, $stack, false);
@@ -1203,10 +1203,11 @@ class Medoo
 
 			if (count($columns_key) === 1 && is_array($columns[$columns_key[0]]))
 			{
-				$index_key = array_keys($columns)[0];
+				$tmp = array_keys($columns);
+				$index_key = $tmp[0];
 				$data_key = preg_replace("/^[a-zA-Z0-9_]+\./i", "", $index_key);
 
-				$current_stack = [];
+				$current_stack = array();
 
 				foreach ($data as $item)
 				{
@@ -1219,7 +1220,7 @@ class Medoo
 			}
 			else
 			{
-				$current_stack = [];
+				$current_stack = array();
 				
 				$this->dataMap($data, $columns, $column_map, $current_stack, false, $result);
 
@@ -1243,7 +1244,7 @@ class Medoo
 
 				if (isset($map[ 1 ]))
 				{
-					if ($isRaw && in_array($map[ 1 ], ['Object', 'JSON']))
+					if ($isRaw && in_array($map[ 1 ], array('Object', 'JSON')))
 					{
 						continue;
 					}
@@ -1288,7 +1289,7 @@ class Medoo
 			}
 			else
 			{
-				$current_stack = [];
+				$current_stack = array();
 
 				$this->dataMap($data, $value, $column_map, $current_stack, false, $result);
 
@@ -1299,7 +1300,7 @@ class Medoo
 
 	public function create($table, $columns, $options = null)
 	{
-		$stack = [];
+		$stack = array();
 
 		$tableName = $this->prefix . $table;
 
@@ -1323,7 +1324,7 @@ class Medoo
 
 		if (is_array($options))
 		{
-			$option_stack = [];
+			$option_stack = array();
 
 			foreach ($options as $key => $value)
 			{
@@ -1352,9 +1353,9 @@ class Medoo
 
 	public function select($table, $join, $columns = null, $where = null)
 	{
-		$map = [];
-		$result = [];
-		$column_map = [];
+		$map = array();
+		$result = array();
+		$column_map = array();
 
 		$index = 0;
 
@@ -1378,14 +1379,14 @@ class Medoo
 
 		while ($data = $query->fetch(PDO::FETCH_ASSOC))
 		{
-			$current_stack = [];
+			$current_stack = array();
 
 			$this->dataMap($data, $columns, $column_map, $current_stack, true, $result);
 		}
 
 		if ($is_single)
 		{
-			$single_result = [];
+			$single_result = array();
 			$result_key = $column_map[ $column ][ 0 ];
 
 			foreach ($result as $item)
@@ -1401,14 +1402,14 @@ class Medoo
 
 	public function insert($table, $datas)
 	{
-		$stack = [];
-		$columns = [];
-		$fields = [];
-		$map = [];
+		$stack = array();
+		$columns = array();
+		$fields = array();
+		$map = array();
 
 		if (!isset($datas[ 0 ]))
 		{
-			$datas = [$datas];
+			$datas = array($datas);
 		}
 
 		foreach ($datas as $data)
@@ -1423,7 +1424,7 @@ class Medoo
 
 		foreach ($datas as $data)
 		{
-			$values = [];
+			$values = array();
 
 			foreach ($columns as $key)
 			{
@@ -1439,7 +1440,7 @@ class Medoo
 
 				if (!isset($data[ $key ]))
 				{
-					$map[ $map_key ] = [null, PDO::PARAM_NULL];
+					$map[ $map_key ] = array(null, PDO::PARAM_NULL);
 				}
 				else
 				{
@@ -1450,12 +1451,12 @@ class Medoo
 					switch ($type)
 					{
 						case 'array':
-							$map[ $map_key ] = [
+							$map[ $map_key ] = array(
 								strpos($key, '[JSON]') === strlen($key) - 6 ?
 									json_encode($value) :
 									serialize($value),
 								PDO::PARAM_STR
-							];
+							);
 							break;
 
 						case 'object':
@@ -1486,8 +1487,8 @@ class Medoo
 
 	public function update($table, $data, $where = null)
 	{
-		$fields = [];
-		$map = [];
+		$fields = array();
+		$map = array();
 
 		foreach ($data as $key => $value)
 		{
@@ -1519,12 +1520,12 @@ class Medoo
 				switch ($type)
 				{
 					case 'array':
-						$map[ $map_key ] = [
+						$map[ $map_key ] = array(
 							strpos($key, '[JSON]') === strlen($key) - 6 ?
 								json_encode($value) :
 								serialize($value),
 							PDO::PARAM_STR
-						];
+						);
 						break;
 
 					case 'object':
@@ -1547,7 +1548,7 @@ class Medoo
 
 	public function delete($table, $where)
 	{
-		$map = [];
+		$map = array();
 
 		return $this->exec('DELETE FROM ' . $this->tableQuote($table) . $this->whereClause($where, $map), $map);
 	}
@@ -1559,8 +1560,8 @@ class Medoo
 			return false;
 		}
 
-		$map = [];
-		$stack = [];
+		$map = array();
+		$stack = array();
 
 		foreach ($columns as $column => $replacements)
 		{
@@ -1572,8 +1573,8 @@ class Medoo
 
 					$stack[] = $this->columnQuote($column) . ' = REPLACE(' . $this->columnQuote($column) . ', ' . $map_key . 'a, ' . $map_key . 'b)';
 
-					$map[ $map_key . 'a' ] = [$old, PDO::PARAM_STR];
-					$map[ $map_key . 'b' ] = [$new, PDO::PARAM_STR];
+					$map[ $map_key . 'a' ] = array($old, PDO::PARAM_STR);
+					$map[ $map_key . 'b' ] = array($new, PDO::PARAM_STR);
 				}
 			}
 		}
@@ -1588,10 +1589,10 @@ class Medoo
 
 	public function get($table, $join = null, $columns = null, $where = null)
 	{
-		$map = [];
-		$result = [];
-		$column_map = [];
-		$current_stack = [];
+		$map = array();
+		$result = array();
+		$column_map = array();
+		$current_stack = array();
 
 		if ($where === null)
 		{
@@ -1637,7 +1638,7 @@ class Medoo
 
 	public function has($table, $join, $where = null)
 	{
-		$map = [];
+		$map = array();
 		$column = null;
 
 		if ($this->type === 'mssql')
@@ -1680,9 +1681,9 @@ class Medoo
 		{
 			if ($columns === null)
 			{
-				$columns = [
+				$columns = array(
 					'ORDER'  => $order_raw
-				];
+				);
 			}
 			else
 			{
@@ -1704,7 +1705,7 @@ class Medoo
 
 	private function aggregate($type, $table, $join = null, $column = null, $where = null)
 	{
-		$map = [];
+		$map = array();
 
 		$query = $this->exec($this->selectContext($table, $map, $join, $column, $where, strtoupper($type)), $map);
 
@@ -1832,13 +1833,13 @@ class Medoo
 
 	public function info()
 	{
-		$output = [
+		$output = array(
 			'server' => 'SERVER_INFO',
 			'driver' => 'DRIVER_NAME',
 			'client' => 'CLIENT_VERSION',
 			'version' => 'SERVER_VERSION',
 			'connection' => 'CONNECTION_STATUS'
-		];
+		);
 
 		foreach ($output as $key => $value)
 		{
