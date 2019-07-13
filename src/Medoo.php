@@ -562,7 +562,7 @@ class Medoo
 			}
 			elseif (!is_int($key) && $raw = $this->buildRaw($value, $map))
 			{
-				preg_match('/(?<column>[a-zA-Z0-9_\.]+)(\s*\[(?<type>(String|Bool|Int|Number))\])?/i', $key, $match);
+				preg_match('/(?P<column>[a-zA-Z0-9_\.]+)(\s*\[(?P<type>(String|Bool|Int|Number))\])?/i', $key, $match);
 
 				$stack[] = $raw . ' AS ' . $this->columnQuote($match[ 'column' ]);
 			}
@@ -573,7 +573,7 @@ class Medoo
 					throw new InvalidArgumentException('Cannot use table.* to select all columns while joining table');
 				}
 
-				preg_match('/(?<column>[a-zA-Z0-9_\.]+)(?:\s*\((?<alias>[a-zA-Z0-9_]+)\))?(?:\s*\[(?<type>(?:String|Bool|Int|Number|Object|JSON))\])?/i', $value, $match);
+				preg_match('/(?P<column>[a-zA-Z0-9_\.]+)(?:\s*\((?P<alias>[a-zA-Z0-9_]+)\))?(?:\s*\[(?P<type>(?:String|Bool|Int|Number|Object|JSON))\])?/i', $value, $match);
 
 				if (!empty($match[ 'alias' ]))
 				{
@@ -646,14 +646,14 @@ class Medoo
 
 			if (
 				is_int($key) &&
-				preg_match('/([a-zA-Z0-9_\.]+)\[(?<operator>\>\=?|\<\=?|\!?\=)\]([a-zA-Z0-9_\.]+)/i', $value, $match)
+				preg_match('/([a-zA-Z0-9_\.]+)\[(?P<operator>\>\=?|\<\=?|\!?\=)\]([a-zA-Z0-9_\.]+)/i', $value, $match)
 			)
 			{
 				$stack[] = $this->columnQuote($match[ 1 ]) . ' ' . $match[ 'operator' ] . ' ' . $this->columnQuote($match[ 3 ]);
 			}
 			else
 			{
-				preg_match('/([a-zA-Z0-9_\.]+)(\[(?<operator>\>\=?|\<\=?|\!|\<\>|\>\<|\!?~|REGEXP)\])?/i', $key, $match);
+				preg_match('/([a-zA-Z0-9_\.]+)(\[(?P<operator>\>\=?|\<\=?|\!|\<\>|\>\<|\!?~|REGEXP)\])?/i', $key, $match);
 				$column = $this->columnQuote($match[ 1 ]);
 
 				if (isset($match[ 'operator' ]))
@@ -733,7 +733,8 @@ class Medoo
 						{
 							if (isset($value[ 'AND' ]) || isset($value[ 'OR' ]))
 							{
-								$connector = ' ' . array_keys($value)[ 0 ] . ' ';
+								$tmp = array_keys($value);
+								$connector = ' ' . $tmp[ 0 ] . ' ';
 								$value = $data[ 0 ];
 							}
 						}
@@ -932,7 +933,7 @@ class Medoo
 				}
 				elseif ($raw = $this->buildRaw($ORDER, $map))
 				{
-					$where_clause .= ' ORDER BY ' . $raw;	
+					$where_clause .= ' ORDER BY ' . $raw;
 				}
 				else
 				{
@@ -950,7 +951,7 @@ class Medoo
 					{
 						$LIMIT = array(0, $LIMIT);
 					}
-					
+
 					if (
 						is_array($LIMIT) &&
 						is_numeric($LIMIT[ 0 ]) &&
@@ -990,7 +991,7 @@ class Medoo
 
 	protected function selectContext($table, &$map, $join, &$columns = null, $where = null, $column_fn = null)
 	{
-		preg_match('/(?<table>[a-zA-Z0-9_]+)\s*\((?<alias>[a-zA-Z0-9_]+)\)/i', $table, $table_match);
+		preg_match('/(?P<table>[a-zA-Z0-9_]+)\s*\((?P<alias>[a-zA-Z0-9_]+)\)/i', $table, $table_match);
 
 		if (isset($table_match[ 'table' ], $table_match[ 'alias' ]))
 		{
@@ -1088,7 +1089,7 @@ class Medoo
 
 		foreach($join as $sub_table => $relation)
 		{
-			preg_match('/(\[(?<join>\<\>?|\>\<?)\])?(?<table>[a-zA-Z0-9_]+)\s?(\((?<alias>[a-zA-Z0-9_]+)\))?/', $sub_table, $match);
+			preg_match('/(\[(?P<join>\<\>?|\>\<?)\])?(?P<table>[a-zA-Z0-9_]+)\s?(\((?P<alias>[a-zA-Z0-9_]+)\))?/', $sub_table, $match);
 
 			if ($match[ 'join' ] !== '' && $match[ 'table' ] !== '')
 			{
@@ -1151,7 +1152,7 @@ class Medoo
 		{
 			if (is_int($key))
 			{
-				preg_match('/([a-zA-Z0-9_]+\.)?(?<column>[a-zA-Z0-9_]+)(?:\s*\((?<alias>[a-zA-Z0-9_]+)\))?(?:\s*\[(?<type>(?:String|Bool|Int|Number|Object|JSON))\])?/i', $value, $key_match);
+				preg_match('/([a-zA-Z0-9_]+\.)?(?P<column>[a-zA-Z0-9_]+)(?:\s*\((?P<alias>[a-zA-Z0-9_]+)\))?(?:\s*\[(?P<type>(?:String|Bool|Int|Number|Object|JSON))\])?/i', $value, $key_match);
 
 				$column_key = !empty($key_match[ 'alias' ]) ?
 					$key_match[ 'alias' ] :
@@ -1168,7 +1169,7 @@ class Medoo
 			}
 			elseif ($this->isRaw($value))
 			{
-				preg_match('/([a-zA-Z0-9_]+\.)?(?<column>[a-zA-Z0-9_]+)(\s*\[(?<type>(String|Bool|Int|Number))\])?/i', $key, $key_match);
+				preg_match('/([a-zA-Z0-9_]+\.)?(?P<column>[a-zA-Z0-9_]+)(\s*\[(?P<type>(String|Bool|Int|Number))\])?/i', $key, $key_match);
 
 				$column_key = $key_match[ 'column' ];
 
@@ -1502,7 +1503,7 @@ class Medoo
 
 			$map_key = $this->mapKey();
 
-			preg_match('/(?<column>[a-zA-Z0-9_]+)(\[(?<operator>\+|\-|\*|\/)\])?/i', $key, $match);
+			preg_match('/(?P<column>[a-zA-Z0-9_]+)(\[(?P<operator>\+|\-|\*|\/)\])?/i', $key, $match);
 
 			if (isset($match[ 'operator' ]))
 			{
