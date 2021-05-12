@@ -222,8 +222,14 @@ class Medoo
         }
 
         $options['type'] = isset($options['type']) ? $options['type'] : $options['database_type'];
-        $options['database'] = isset($options['database']) ? $options['database'] : $options['database_name'];
-        $options['host'] = isset($options['host']) ? $options['host'] : $options['server'];
+
+        if (!isset($options['pdo'])) {
+            $options['database'] = isset($options['database']) ? $options['database'] : $options['database_name'];
+
+            if (!isset($options['socket'])) {
+                $options['host'] = isset($options['host']) ? $options['host'] : $options['server'];
+            }
+        }
 
         if (isset($options['type'])) {
             $this->type = \strtolower($options['type']);
@@ -640,7 +646,7 @@ class Medoo
     {
         $stack = array();
         $tableOption = '';
-        $tableName = $this->tableQuote($this->prefix . $table);
+        $tableName = $this->tableQuote($table);
 
         foreach ($columns as $name => $definition) {
             if (\is_int($name)) {
